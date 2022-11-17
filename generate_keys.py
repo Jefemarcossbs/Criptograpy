@@ -3,6 +3,7 @@ from path import Path
 from cryptography.fernet import Fernet
 
 class encriptacao:
+    #Método para gerar uma chave 
     def generate_keys(name_key):
         name_key = name_key + ".key"
         generated_key = Fernet.generate_key()
@@ -15,25 +16,25 @@ class encriptacao:
             with open(name_key, 'rb') as load_key:
                 key = Fernet(load_key.read())
                 return key
-        except FileNotFoundError:
-            print("Não foi possivel carregar ou encontrar a chave -> {}".format(FileNotFoundError))
+        except FileNotFoundError as erro_chave:
+            print(str(erro_chave))
 
     def encrypt_files(diretorio, nome_chave):
+        diretorio_to_encrypt = diretorio
         loaded_key = encriptacao.open_key(nome_chave)
-        diretorio_to_encrypt = os.chdir(diretorio)
-        with os.scandir(diretorio_to_encrypt) as arquivos:
-            for lista_arquivos in arquivos:
-                arquivo = Path(lista_arquivos.name)
-                if arquivo.isfile() == True:
-                    print(arquivo.name)
-                    try:
+        try:
+            os.chdir(diretorio)
+            with os.scandir(diretorio_to_encrypt) as arquivos:
+                for lista_arquivos in arquivos:
+                    arquivo = Path(lista_arquivos.name)
+                    if arquivo.isfile() == True:
                         with open(arquivo.name, "rb") as file:
                             file_data = file.read()
                             encrypt_data = loaded_key.encrypt(file_data)
                             with open(arquivo.name, "wb") as encritp_file:
                                 encritp_file.write(encrypt_data)
-                    except PermissionError:
-                        print("Sem premisão para criptografar o arquivo {}".format(PermissionError))
+        except FileNotFoundError as erro:
+            print(erro)          
 
     def decrypt_files(diretorio, nome_chave):
         loaded_key = encriptacao.open_key(nome_chave)
